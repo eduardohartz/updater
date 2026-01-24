@@ -4,7 +4,22 @@ import { exec } from "child_process"
 import path from "path"
 
 const app = express()
-app.use(express.json())
+app.use(
+    express.json({
+        verify: (req: any, _res, buf: Buffer) => {
+            req.rawBody = buf
+        },
+    }),
+)
+// Capture raw body for application/x-www-form-urlencoded payloads too
+app.use(
+    express.urlencoded({
+        extended: true,
+        verify: (req: any, _res, buf: Buffer) => {
+            req.rawBody = buf
+        },
+    }),
+)
 
 const SECRET = process.env.WEBHOOK_SECRET || "change_this"
 
@@ -15,10 +30,21 @@ const projects = ["capital-crm", "updater"]
 const running: Record<string, boolean> = {}
 
 function verifySignature(req: express.Request) {
-    const signature = req.headers["x-hub-signature-256"] as string
-    const payload = JSON.stringify(req.body)
-    const hmac = `sha256=${crypto.createHmac("sha256", SECRET).update(payload).digest("hex")}`
-    return signature === hmac
+    const signature = req.headers["x-hub-signature-256"] as string | undefined
+    const raw = (req as any).rawBody as Buffer | undefined
+
+    if (!signature || !raw) return false
+
+    const hmac = `sha256=${crypto.createHmac("sha256", SECRET).update(raw).digest("hex")}`
+
+    try {
+        const sigBuf = Buffer.from(signature)
+        const hmacBuf = Buffer.from(hmac)
+        if (sigBuf.length !== hmacBuf.length) return false
+        return crypto.timingSafeEqual(sigBuf, hmacBuf)
+    } catch (e) {
+        return false
+    }
 }
 
 app.post("/update/:project", (req, res) => {
@@ -57,11 +83,16 @@ app.post("/update/:project", (req, res) => {
         if (err) {
             console.error(`Error deploying ${project}:`, err)
             console.error(stderr)
-            return res.status(500).send(`ERR:\n${stderr}\nSTDOUT:\n${stdout}`)
+            if (!res.headersSent) {
+                return res.status(500).send(`ERR:\n${stderr}\nSTDOUT:\n${stdout}`)
+            }
+            return
         }
 
         console.log(`Deployment of ${project} complete:`)
-        res.status(200).send(`Deployment of ${project} successful:\n${stdout}\nSTDERR:\n${stderr}`)
+        if (!res.headersSent) {
+            res.status(200).send(`Deployment of ${project} successful:\n${stdout}\nSTDERR:\n${stderr}`)
+        }
     })
 })
 
