@@ -2,10 +2,7 @@
 FROM node:25.4.0-trixie-slim
 
 RUN apt-get update -y
-RUN  apt-get install -y openssl
-
-# Install git
-RUN apk add --no-cache git bash
+RUN apt-get install -y openssl git
 
 # Set working directory
 WORKDIR /app
