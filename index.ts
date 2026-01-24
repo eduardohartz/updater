@@ -80,7 +80,8 @@ app.post("/update/:project", (req, res) => {
             git pull &&
             # export variables from the project's .env so compose interpolation uses them
             set -a && [ -f .env ] && . .env && set +a && \
-            docker compose build
+            docker compose build &&
+            docker compose restart updater
         `
     } else {
         cmd = `
@@ -108,7 +109,7 @@ app.post("/update/:project", (req, res) => {
 
         console.log(`Deployment of ${project} complete`)
         if (project === "updater") {
-            process.exit(0)
+            return
         }
         if (!res.headersSent) {
             res.status(200).send(`Deployment of ${project} successful:\n${stdout}\nSTDERR:\n${stderr}`)
@@ -116,4 +117,4 @@ app.post("/update/:project", (req, res) => {
     })
 })
 
-app.listen(process.env.PORT || 3000, () => console.log("Updater service running: TEST"))
+app.listen(process.env.PORT || 3000, () => console.log("Updater service running: TEST2"))
