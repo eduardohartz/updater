@@ -38,8 +38,8 @@ app.post("/update/:project", (req, res) => {
         cd ${projectDir} &&
         git config --global --add safe.directory ${projectDir} &&
         git pull &&
-        docker compose build &&
-        docker compose up -d
+        docker compose --env-file .env build &&
+        docker compose --env-file .env up -d
     `
 
     exec(cmd, { shell: "bash" }, (err, stdout, stderr) => {
@@ -52,7 +52,7 @@ app.post("/update/:project", (req, res) => {
         }
 
         console.log(`Deployment of ${project} complete:\n`, stdout)
-        res.send(`Deployment of ${project} successful`)
+        res.status(200).send(`Deployment of ${project} successful:\n` + stdout)
     })
 })
 
