@@ -108,7 +108,6 @@ app.post("/update/:project", (req, res) => {
 
         console.log(`Deployment of ${project} complete`)
         if (project === "updater") {
-            // Exit to allow container restart with new image
             process.exit(0)
         }
         if (!res.headersSent) {
