@@ -1,0 +1,60 @@
+import express from "express"
+import crypto from "crypto"
+import { exec } from "child_process"
+import path from "path"
+
+const app = express()
+app.use(express.json())
+
+const SECRET = process.env.WEBHOOK_SECRET || "change_this"
+
+const BASE_DIR = "/home/containers"
+
+const projects = ["capital-crm"]
+
+const running: Record<string, boolean> = {}
+
+function verifySignature(req: express.Request) {
+    const signature = req.headers["x-hub-signature-256"] as string
+    const payload = JSON.stringify(req.body)
+    const hmac = `sha256=${crypto.createHmac("sha256", SECRET).update(payload).digest("hex")}`
+    return signature === hmac
+}
+
+app.post("/update/:project", (req, res) => {
+    const project = req.params.project
+
+    if (!verifySignature(req)) return res.status(403).send("Invalid signature")
+
+    if (!projects.includes(project)) return res.status(404).send("Project not found")
+
+    const projectDir = path.join(BASE_DIR, project)
+
+    if (running[project]) {
+        return res.status(429).send("Deployment already in progress for this project")
+    }
+
+    running[project] = true
+
+    const cmd = `
+    cd ${projectDir} &&
+    git pull &&
+    docker compose build &&
+    docker compose up -d
+  `
+
+    exec(cmd, { shell: "bash" }, (err, stdout, stderr) => {
+        running[project] = false
+
+        if (err) {
+            console.error(`Error deploying ${project}:`, err)
+            console.error(stderr)
+            return res.status(500).send(stderr)
+        }
+
+        console.log(`Deployment of ${project} complete:\n`, stdout)
+        res.send(`Deployment of ${project} successful`)
+    })
+})
+
+app.listen(process.env.PORT || 3000, () => console.log("Updater service running"))
