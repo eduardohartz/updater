@@ -11,7 +11,6 @@ app.use(
         },
     }),
 )
-// Capture raw body for application/x-www-form-urlencoded payloads too
 app.use(
     express.urlencoded({
         extended: true,
