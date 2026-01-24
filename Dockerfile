@@ -1,8 +1,15 @@
 # Use official Node.js LTS image
 FROM node:25.4.0-trixie-slim
 
-RUN apt-get update -y
-RUN apt-get install -y openssl git
+RUN apt-get update -y && \
+	apt-get install -y --no-install-recommends \
+		ca-certificates \
+		curl \
+		openssl \
+		git \
+		docker.io \
+		docker-compose-plugin && \
+	rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
