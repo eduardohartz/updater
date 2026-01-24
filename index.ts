@@ -41,8 +41,7 @@ app.post("/update/:project", (req, res) => {
         # export variables from the project's .env so compose interpolation uses them
         set -a && [ -f .env ] && . .env && set +a && \
         docker compose build &&
-        docker compose up -d --force-recreate --remove-orphans &&
-        docker compose ps
+        docker compose up -d --force-recreate --remove-orphans
     `
 
     exec(cmd, { shell: "bash" }, (err, stdout, stderr) => {
@@ -54,7 +53,7 @@ app.post("/update/:project", (req, res) => {
             return res.status(500).send(`ERR:\n${stderr}\nSTDOUT:\n${stdout}`)
         }
 
-        console.log(`Deployment of ${project} complete:\n`, stdout)
+        console.log(`Deployment of ${project} complete:`)
         res.status(200).send(`Deployment of ${project} successful:\n${stdout}\nSTDERR:\n${stderr}`)
     })
 })
