@@ -7,8 +7,7 @@ RUN apt-get update -y && \
 		curl \
 		openssl \
 		git \
-		docker.io \
-	rm -rf /var/lib/apt/lists/*
+		docker.io
 
 # Set working directory
 WORKDIR /app
