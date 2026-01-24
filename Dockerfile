@@ -8,7 +8,6 @@ RUN apt-get update -y && \
 		openssl \
 		git \
 		docker.io \
-		docker-compose-plugin && \
 	rm -rf /var/lib/apt/lists/*
 
 # Set working directory
