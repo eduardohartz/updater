@@ -14,17 +14,15 @@ const projects = ["capital-crm"]
 
 const running: Record<string, boolean> = {}
 
-function verifySignature(req: express.Request) {
-    const signature = req.headers["x-hub-signature-256"] as string
-    const payload = JSON.stringify(req.body)
-    const hmac = `sha256=${crypto.createHmac("sha256", SECRET).update(payload).digest("hex")}`
-    return signature === hmac
+function verifyAuthorization(req: express.Request) {
+    const auth = req.headers["authorization"] as string | undefined
+    return auth === SECRET
 }
 
 app.post("/update/:project", (req, res) => {
     const project = req.params.project
 
-    if (!verifySignature(req)) return res.status(403).send("Invalid signature")
+    if (!verifyAuthorization(req)) return res.status(403).send("Invalid authorization")
 
     if (!projects.includes(project)) return res.status(404).send("Project not found")
 
