@@ -10,6 +10,11 @@ RUN apt-get update -y && \
 
 COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
 
+# Install Docker Compose v2 CLI plugin
+RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
+	curl -SL https://github.com/docker/compose/releases/download/v5.0.2/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose && \
+	chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
 # Set working directory
 WORKDIR /app
 
