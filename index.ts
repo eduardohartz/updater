@@ -116,4 +116,4 @@ app.post("/update/:project", (req, res) => {
     })
 })
 
-app.listen(process.env.PORT || 3000, () => console.log("Updater service running"))
+app.listen(process.env.PORT || 3000, () => console.log("Updater service running: TEST"))
