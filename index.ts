@@ -98,7 +98,7 @@ app.post("/update/:project", (req, res) => {
             return
         }
 
-        console.log(`Deployment of ${project} complete:`)
+        console.log(`Deployment of ${project} complete`)
         if (!res.headersSent) {
             res.status(200).send(`Deployment of ${project} successful:\n${stdout}\nSTDERR:\n${stderr}`)
         }
