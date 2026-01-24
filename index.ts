@@ -30,21 +30,30 @@ const projects = ["capital-crm", "updater"]
 const running: Record<string, boolean> = {}
 
 function verifySignature(req: express.Request) {
-    const signature = req.headers["x-hub-signature-256"] as string | undefined
+    const sig256 = req.headers["x-hub-signature-256"] as string | undefined
+    const sig1 = req.headers["x-hub-signature"] as string | undefined
     const raw = (req as any).rawBody as Buffer | undefined
 
-    if (!signature || !raw) return false
+    if (!raw) return false
 
-    const hmac = `sha256=${crypto.createHmac("sha256", SECRET).update(raw).digest("hex")}`
-
-    try {
-        const sigBuf = Buffer.from(signature)
-        const hmacBuf = Buffer.from(hmac)
-        if (sigBuf.length !== hmacBuf.length) return false
-        return crypto.timingSafeEqual(sigBuf, hmacBuf)
-    } catch (e) {
-        return false
+    const compare = (signature: string, algorithm: "sha256" | "sha1") => {
+        const prefix = algorithm === "sha256" ? "sha256=" : "sha1="
+        const sig = signature.trim()
+        if (!sig.startsWith(prefix)) return false
+        const expected = `${prefix}${crypto.createHmac(algorithm, SECRET).update(raw).digest("hex")}`
+        try {
+            const sigBuf = Buffer.from(sig)
+            const expBuf = Buffer.from(expected)
+            if (sigBuf.length !== expBuf.length) return false
+            return crypto.timingSafeEqual(sigBuf, expBuf)
+        } catch (e) {
+            return false
+        }
     }
+
+    if (sig256) return compare(sig256, "sha256")
+    if (sig1) return compare(sig1, "sha1")
+    return false
 }
 
 app.post("/update/:project", (req, res) => {
