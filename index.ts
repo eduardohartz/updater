@@ -24,7 +24,7 @@ const SECRET = process.env.WEBHOOK_SECRET || "change_this"
 
 const BASE_DIR = "/home/containers"
 
-const projects = ["capital-crm", "updater"]
+const projects = ["capital-crm"]
 
 const running: Record<string, boolean> = {}
 
@@ -69,10 +69,6 @@ app.post("/update/:project", (req, res) => {
     }
 
     running[project] = true
-
-    if (project === "updater") {
-        res.status(200).send("Updater is updating itself. It will be back shortly.")
-    }
 
     const cmd = `
         cd ${projectDir} &&
