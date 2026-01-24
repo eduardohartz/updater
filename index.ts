@@ -72,7 +72,6 @@ app.post("/update/:project", (req, res) => {
     running[project] = true
 
     if (project === "updater") {
-        // Send immediate response before updating self
         res.status(200).send("Updater is updating itself. It will be back shortly.")
     }
 
