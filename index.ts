@@ -35,11 +35,12 @@ app.post("/update/:project", (req, res) => {
     running[project] = true
 
     const cmd = `
-    cd ${projectDir} &&
-    git pull &&
-    docker compose build &&
-    docker compose up -d
-  `
+        cd ${projectDir} &&
+        git config --global --add safe.directory ${projectDir} &&
+        git pull &&
+        docker compose build &&
+        docker compose up -d
+    `
 
     exec(cmd, { shell: "bash" }, (err, stdout, stderr) => {
         running[project] = false
