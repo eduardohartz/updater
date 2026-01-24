@@ -1,7 +1,7 @@
 services:
     updater:
         build: .
-        restart: unless-stopped
+        restart: always
         ports:
             - "${PORT}:${PORT}"
         environment:
