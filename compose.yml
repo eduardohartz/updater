@@ -10,4 +10,4 @@ services:
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
             - /home/containers:/home/containers
-        working_dir: /home/containers
+        working_dir: /app
