@@ -38,9 +38,11 @@ app.post("/update/:project", (req, res) => {
         cd ${projectDir} &&
         git config --global --add safe.directory ${projectDir} &&
         git pull &&
-        docker compose --env-file .env build &&
-        docker compose --env-file .env up -d --force-recreate --remove-orphans &&
-        docker compose --env-file .env ps
+        # export variables from the project's .env so compose interpolation uses them
+        set -a && [ -f .env ] && . .env && set +a && \
+        docker compose build &&
+        docker compose up -d --force-recreate --remove-orphans &&
+        docker compose ps
     `
 
     exec(cmd, { shell: "bash" }, (err, stdout, stderr) => {
