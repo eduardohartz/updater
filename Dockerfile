@@ -6,8 +6,9 @@ RUN apt-get update -y && \
 		ca-certificates \
 		curl \
 		openssl \
-		git \
-		docker.io
+		git
+
+COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
 
 # Set working directory
 WORKDIR /app
