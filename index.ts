@@ -71,29 +71,19 @@ app.post("/update/:project", (req, res) => {
 
     running[project] = true
 
-    let cmd: string
     if (project === "updater") {
         res.status(200).send("Updater is updating itself. It will be back shortly.")
-        cmd = `
-            cd ${projectDir} &&
-            git config --global --add safe.directory ${projectDir} &&
-            git pull &&
-            # export variables from the project's .env so compose interpolation uses them
-            set -a && [ -f .env ] && . .env && set +a && \
-            docker compose build &&
-            docker compose restart updater
-        `
-    } else {
-        cmd = `
-            cd ${projectDir} &&
-            git config --global --add safe.directory ${projectDir} &&
-            git pull &&
-            # export variables from the project's .env so compose interpolation uses them
-            set -a && [ -f .env ] && . .env && set +a && \
-            docker compose build &&
-            docker compose up -d --force-recreate --remove-orphans
-        `
     }
+
+    const cmd = `
+        cd ${projectDir} &&
+        git config --global --add safe.directory ${projectDir} &&
+        git pull &&
+        # export variables from the project's .env so compose interpolation uses them
+        set -a && [ -f .env ] && . .env && set +a && \
+        docker compose build &&
+        docker compose up -d --force-recreate --remove-orphans
+    `
 
     exec(cmd, { shell: "bash" }, (err, stdout, stderr) => {
         running[project] = false
@@ -108,13 +98,10 @@ app.post("/update/:project", (req, res) => {
         }
 
         console.log(`Deployment of ${project} complete`)
-        if (project === "updater") {
-            return
-        }
         if (!res.headersSent) {
             res.status(200).send(`Deployment of ${project} successful:\n${stdout}\nSTDERR:\n${stderr}`)
         }
     })
 })
 
-app.listen(process.env.PORT || 3000, () => console.log("Updater service running: TEST2"))
+app.listen(process.env.PORT || 3000, () => console.log("Updater service running"))
