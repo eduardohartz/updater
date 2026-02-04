@@ -24,7 +24,7 @@ const SECRET = process.env.WEBHOOK_SECRET || "change_this"
 
 const BASE_DIR = "/home/containers"
 
-const projects = ["capital-crm"]
+const projects = ["capital-crm", "sightread"]
 
 const running: Record<string, boolean> = {}
 
